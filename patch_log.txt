@@ -1,0 +1,26 @@
+------------------------------------------------------------------------
+r26912 | jpbriede@CATNET.ARIZONA.EDU | 2012-07-19 16:28:49 -0700 (Thu, 19 Jul 2012) | 2 lines
+Changed paths:
+   M /financial-system/kfs/trunk/build/project/configuration.properties
+   M /financial-system/kfs/trunk/build/properties/directory.properties
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/spring-sys.xml
+
+KATTS-843
+Added file-based, remote batch job invoker class as a TimerTask that checks for files of a certain format and invokes the appropriate batch job. Also checks the status of invoked jobs.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r34294 | shaloo@CATNET.ARIZONA.EDU | 2013-11-26 16:43:54 -0700 (Tue, 26 Nov 2013) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java
+
+KATTS-2015 Updated the createStatusFile method to use moveFile instead of touch.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r34412 | hlo@CATNET.ARIZONA.EDU | 2013-12-03 16:32:12 -0700 (Tue, 03 Dec 2013) | 2 lines
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java
+
+KATTS-2015
+Modifying runBatchJob method to catch any errors and log a message in the status file.
+------------------------------------------------------------------------

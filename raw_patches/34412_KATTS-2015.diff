@@ -1,0 +1,85 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java	(revision 34411)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java	(revision 34412)
+@@ -4,15 +4,12 @@
+ import java.io.File;
+ import java.io.FileWriter;
+ import java.io.IOException;
+-import java.lang.management.ManagementFactory;
+-import java.lang.management.RuntimeMXBean;
+ import java.net.UnknownHostException;
+ import java.text.SimpleDateFormat;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Date;
+ import java.util.HashMap;
+-import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.TimerTask;
+@@ -48,6 +45,7 @@
+     public static final String REFUSED_JOB_STATUS_CODE = "Refused";
+     public static final String NULL_JOB_STATUS_CODE = "Null Status";
+     public static final String STARTING_STATUS_CODE = "Starting";
++    public static final String UNRUNNABLE_JOB_MESSAGE = "Unable to run job!";
+     
+     protected String directoryToWatch;
+     protected String historyDirectory;
+@@ -150,11 +148,11 @@
+         for(File runFile : runFiles) {
+             String baseName = FilenameUtils.getBaseName(runFile.getName());
+             String jobName = parseJobnameFromFilename(baseName);
+-            
++           
+             String statusFileName = baseName + statusFileSuffix;
+             createStatusFile( runFile, statusFileName );
+             writeJobStatus(baseName, STARTING_STATUS_CODE);
+-            boolean jobRan = runBatchJob(jobName);
++            boolean jobRan = runBatchJob(jobName, baseName);
+             if(jobRan) {
+                 runningJobs.put(jobName, baseName);
+             } else {
+@@ -164,13 +162,20 @@
+         }
+     }
+     
+-    protected boolean runBatchJob(String jobName) {
++    protected boolean runBatchJob(String jobName, String baseName) {
+         // Job is still in the running state. Do not run job again.
+         if(runningJobs.containsKey(jobName) || SchedulerService.RUNNING_JOB_STATUS_CODE.equals(getJobStatus(jobName))) {
+             return false;
+         }
+         
+-        schedulerService.runJob(jobName, null);
++        try {
++            schedulerService.runJob(jobName, null);
++        }
++        catch (RuntimeException e) {
++            writeJobStatus(baseName, UNRUNNABLE_JOB_MESSAGE);
++            return false;
++        }
++        
+         return true;
+     }
+     
+@@ -182,7 +187,7 @@
+             return null;
+         }
+     }
+-
++    
+     protected void createStatusFile(File runFile, String statusFileName) {
+         try {
+             String path = directoryToWatch + File.separator;
+@@ -192,8 +197,8 @@
+         catch (IOException ex) {
+             LOG.error("Failed to create status file: " + statusFileName, ex);
+         }
+-    }
+-
++    }   
++    
+     protected void checkRunningJobs() {
+         String jobBaseName;
+         String jobStatus;

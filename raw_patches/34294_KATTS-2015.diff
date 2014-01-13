@@ -1,0 +1,42 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java	(revision 34293)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/batch/RemoteBatchJobInvoker.java	(revision 34294)
+@@ -47,6 +47,7 @@
+     private static final int WARNING_LOG_FREQUENCY = 12;
+     public static final String REFUSED_JOB_STATUS_CODE = "Refused";
+     public static final String NULL_JOB_STATUS_CODE = "Null Status";
++    public static final String STARTING_STATUS_CODE = "Starting";
+     
+     protected String directoryToWatch;
+     protected String historyDirectory;
+@@ -150,8 +151,9 @@
+             String baseName = FilenameUtils.getBaseName(runFile.getName());
+             String jobName = parseJobnameFromFilename(baseName);
+             
+-            runFile.delete();
+-            createStatusFile(baseName + statusFileSuffix);
++            String statusFileName = baseName + statusFileSuffix;
++            createStatusFile( runFile, statusFileName );
++            writeJobStatus(baseName, STARTING_STATUS_CODE);
+             boolean jobRan = runBatchJob(jobName);
+             if(jobRan) {
+                 runningJobs.put(jobName, baseName);
+@@ -181,12 +183,14 @@
+         }
+     }
+ 
+-    protected void createStatusFile(String filename) {
++    protected void createStatusFile(File runFile, String statusFileName) {
+         try {
+-            FileUtils.touch(new File(directoryToWatch + File.separator + filename));
++            String path = directoryToWatch + File.separator;
++            File statusFile = new File(path + statusFileName);
++            FileUtils.moveFile(runFile, statusFile);
+         }
+         catch (IOException ex) {
+-            LOG.error("Failed to create status file: " + filename, ex);
++            LOG.error("Failed to create status file: " + statusFileName, ex);
+         }
+     }
+ 
